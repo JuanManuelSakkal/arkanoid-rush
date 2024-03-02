@@ -169,7 +169,6 @@ const writeScore = () => {
 }
 
 const resetScore = () => {
-  lastTime = 0
   level = 1
   score = 0
   powerUpsValue = 0
@@ -193,8 +192,10 @@ const lose = () => {
 
 const levelUp = () => {
   defaultBallSpeedY++
+  level++
   resetBalls()
   resetPowerUps()
+  resetPaddle()
   paddle.x = BOARD_WIDTH / 2 - paddle.width / 2
   generateBars(64)
   document.getElementById("level-value").innerHTML = level

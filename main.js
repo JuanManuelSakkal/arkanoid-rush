@@ -13,7 +13,7 @@ const BALL_RADIUS = 10
 let defaultBallSpeedY = 5
 const getDefaultBallSpeed = () => {
   return {
-    x: 0,
+    x: 1,
     y: -defaultBallSpeedY
   }
 }
@@ -155,7 +155,6 @@ const draw = () => {
 }
 
 const moveBalls = (deltaTime) => {
-  console.log("moving ball")
   balls.forEach((ball) => {
     ball.x += ball.speed.x * deltaTime
     ball.y += ball.speed.y * deltaTime
@@ -232,8 +231,6 @@ const checkCollidesWithAnyBar = (ball) => {
 
 //check which side of bar is colliding with ball
 const checkBarCollidingSide = (ball, bar) => {
-  console.log("ball x " + (ball.x + ball.radius))
-  console.log("bar x " + bar.x)
   
   if (ball.x + ball.radius - ball.speed.x <= bar.x) {
     return 'left'
@@ -379,7 +376,10 @@ const update = (time = 0) => {
   deltaTime = (time - lastTime) / 16
   lastTime = time
 
-  console.log(deltaTime)
+  if (deltaTime > 2) {
+    deltaTime = 0
+  }
+
   moveBalls(deltaTime)
   movePowerUps(deltaTime)
   writeScore()

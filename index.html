@@ -8,7 +8,28 @@
   </head>
   <body>
     <div id="app">
-      <canvas></canvas>
+      <h1 class="title">Arkanoid Rush</h1>
+      <div id="game">
+        <section id="score-left" class="score">
+          <section id="powerups" class="score-counter">
+            Powerups: <span id="powerups-value"></span>
+          </section>
+          <section id="bars" class="score-counter">
+            Bars: <span id="bars-value"></span>
+          </section>
+        </section>
+  
+        <canvas id="canvas"></canvas>
+  
+        <section id="score-right" class="score">
+          <section id="level" class="score-counter">
+            Level: <span id="level-value"></span>
+          </section>
+          <section id="total-score" class="score-counter">
+            Score: <span id="score-value"></span>
+          </section>
+        </section>
+      </div>
     </div>
     <script type="module" src="/main.js"></script>
   </body>

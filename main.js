@@ -1,9 +1,7 @@
 import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
+import "./events.js"
 
-const BOARD_WIDTH = 800
+export const BOARD_WIDTH = 800
 const BOARD_HEIGHT = 600
 const PADDLE_WIDTH = 100
 const PADDLE_HEIGHT = 10
@@ -12,15 +10,24 @@ const BAR_WIDTH = 90
 const BAR_HEIGHT = 15
 const BAR_PADDING = 5
 const BALL_RADIUS = 10
-const BALL_SPEED = {
-  x: 0,
-  y: -5
+let defaultBallSpeedY = 5
+const getDefaultBallSpeed = () => {
+  return {
+    x: 0,
+    y: -defaultBallSpeedY
+  }
 }
+
+const DEFAULT_BALL_SPEED = 5
 const POWERUP_WIDTH = 50
 const POWERUP_HEIGHT = 20
 const POWERUP_SPEED = 1
 
 let lastTime = 0
+let level = 1
+let score = 0
+let powerUpsValue = 0
+let barsValue = 0
 
 const barColors = [
   '#4287f5',
@@ -44,11 +51,15 @@ const ctx = canvas.getContext('2d')
 const powerUpsList = [
   { 
     name: 'duplicateBalls',
-    color: "#4287f5",
+    color: ["#6dff2e", "#4ff8ff"],
+  },
+  { 
+    name: 'enlargePaddle',
+    color: ["#f52525", "#ff6b6b"],
   }
 ]
 
-const paddle = {
+export const paddle = {
   x: BOARD_WIDTH / 2 - PADDLE_WIDTH / 2,
   y: BOARD_HEIGHT - PADDLE_HEIGHT - 10,
   width: PADDLE_WIDTH,
@@ -60,7 +71,7 @@ const balls = [{
   x: BOARD_WIDTH / 2,
   y: BOARD_HEIGHT - PADDLE_HEIGHT - 10 - BALL_RADIUS,
   radius: BALL_RADIUS,
-  speed: BALL_SPEED
+  speed: getDefaultBallSpeed()
 }]
 
 const bars = []
@@ -72,8 +83,12 @@ const resetBalls = () => {
     x: BOARD_WIDTH / 2,
     y: BOARD_HEIGHT - PADDLE_HEIGHT - 10 - BALL_RADIUS,
     radius: BALL_RADIUS,
-    speed: BALL_SPEED
+    speed: getDefaultBallSpeed()
   })
+}
+
+const resetPowerUps = () => {
+  powerUps.splice(0, powerUps.length)
 }
 
 const generateBars = (amount) => {
@@ -90,15 +105,6 @@ const generateBars = (amount) => {
     })
   }
 }
-
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'ArrowLeft' && paddle.x > 0) {
-    paddle.x -= paddle.speed
-  } else if (event.key === 'ArrowRight' && paddle.x < BOARD_WIDTH - paddle.width) {
-    paddle.x += paddle.speed
-  }
-})
-
 const drawPaddle = () => {
   ctx.fillStyle = '#fff'
   ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height)
@@ -131,8 +137,8 @@ const drawBars = () => {
 
 const drawPowerUp = (powerUp) => {
   const grd = ctx.createRadialGradient(powerUp.x + POWERUP_WIDTH / 2, powerUp.y + POWERUP_HEIGHT / 2, 0, powerUp.x + POWERUP_WIDTH / 2, powerUp.y + POWERUP_HEIGHT / 2, POWERUP_WIDTH / 2)
-  grd.addColorStop(0, "#6dff2e")
-  grd.addColorStop(1, "#4ff8ff")
+  grd.addColorStop(0, powerUp.color[0])
+  grd.addColorStop(1, powerUp.color[1])
   ctx.fillStyle = grd
   ctx.fillRect(powerUp.x, powerUp.y, POWERUP_WIDTH, POWERUP_HEIGHT)
 }
@@ -155,11 +161,43 @@ const moveBalls = () => {
   })
 }
 
+const writeScore = () => {
+  document.getElementById("score-value").innerHTML = score
+  document.getElementById("level-value").innerHTML = level
+  document.getElementById("powerups-value").innerHTML = powerUpsValue
+  document.getElementById("bars-value").innerHTML = barsValue
+}
+
+const resetScore = () => {
+  lastTime = 0
+  level = 1
+  score = 0
+  powerUpsValue = 0
+  barsValue = 0
+}
+
+const resetPaddle = () => {
+  paddle.x = BOARD_WIDTH / 2 - PADDLE_WIDTH / 2
+  paddle.width = PADDLE_WIDTH
+}
+
 const lose = () => {
   alert('You lost!')
-  resetBall()
-  paddle.x = BOARD_WIDTH / 2 - PADDLE_WIDTH / 2
+  defaultBallSpeedY = DEFAULT_BALL_SPEED
+  resetScore()
+  resetBalls()
+  resetPowerUps()
+  resetPaddle()
   generateBars(64)
+}
+
+const levelUp = () => {
+  defaultBallSpeedY++
+  resetBalls()
+  resetPowerUps()
+  paddle.x = BOARD_WIDTH / 2 - paddle.width / 2
+  generateBars(64)
+  document.getElementById("level-value").innerHTML = level
 }
 
 const getBallXDistanceFromPaddle = (ball) => {
@@ -183,6 +221,8 @@ const checkCollidesWithAnyBar = (ball) => {
     if (checkCollisionWithBar(ball, bar)) {
       barCollides = bar
       bars.splice(index, 1)
+      barsValue++
+      score += 10
     }
   });
   return barCollides
@@ -242,8 +282,9 @@ const handleBallCollision = (ball) => {
   // Check if the ball collides with the bottom
   if (ball.y + ball.radius > BOARD_HEIGHT) {
     balls.splice(balls.indexOf(ball), 1)
-    if(balls.length === 0)
+    if(balls.length === 0){
       lose()
+    }
   }
 
   // Check if the ball collides with the left or right
@@ -251,7 +292,10 @@ const handleBallCollision = (ball) => {
     ball.speed.x = -ball.speed.x
   }
   let bar = checkCollidesWithAnyBar(ball)
-
+  if (bars.length === 0) {
+    levelUp()
+    return
+  }
   // Check if the ball collides with a bar
     if (bar) {
       const side = checkBarCollidingSide(ball, bar)
@@ -267,9 +311,9 @@ const handleBallCollision = (ball) => {
 const collidesWithPaddle = (powerUp) => {
   return (
     paddle.x + paddle.width > powerUp.x &&
-    paddle.x - paddle.width < powerUp.x + POWERUP_WIDTH &&
+    paddle.x < powerUp.x + POWERUP_WIDTH &&
     paddle.y + paddle.height > powerUp.y &&
-    paddle.y - paddle.height < powerUp.y + POWERUP_HEIGHT
+    paddle.y < powerUp.y + POWERUP_HEIGHT
   )
 }
 
@@ -288,9 +332,22 @@ const duplicateBalls = () => {
   })
 }
 
+const enlargePaddle = () => {
+  paddle.width += 10
+  paddle.x -= 5
+}
+
 const triggerPowerUp = (powerUp) => {
-  if (powerUp.name === 'duplicateBalls') {
-    duplicateBalls()
+  switch (powerUp.name) {
+    case 'duplicateBalls':
+      duplicateBalls()
+      break
+    case 'enlargePaddle':
+      enlargePaddle()
+      break
+    case 'speedUpPaddle':
+      speedUpPaddle()
+      break
   }
 }
 
@@ -302,6 +359,8 @@ const movePowerUps = () => {
     }
     if (collidesWithPaddle(powerUp)) {
       triggerPowerUp(powerUp)
+      powerUpsValue++
+      score += 5
       powerUps.splice(powerUps.indexOf(powerUp), 1)
     }
   })  
@@ -313,6 +372,7 @@ const update = (time) => {
   })
   moveBalls()
   movePowerUps()
+  writeScore()
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   ctx.fillStyle = '#444'
@@ -320,5 +380,6 @@ const update = (time) => {
   draw()
   requestAnimationFrame(update)
 }
+writeScore()
 generateBars(64)
 update()

@@ -26,7 +26,6 @@ body {
   background-color: #333;
   margin: 0;
   display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -37,7 +36,7 @@ h1 {
 }
 
 #app {
-  max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -94,4 +93,49 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.title {
+  color: #fff;
+  font-size: 4rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+#canvas {
+  width: 800px;
+  height: 600px;
+}
+
+.score {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.score-counter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+
+}
+.score-counter span {
+  margin: 0 10px;
+  width: 100px;
+  text-align: center;
+  background-color: #444;
+}
+
+#game {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }

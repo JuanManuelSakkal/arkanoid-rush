@@ -154,10 +154,11 @@ const draw = () => {
   drawPowerUps()
 }
 
-const moveBalls = () => {
+const moveBalls = (deltaTime) => {
+  console.log("moving ball")
   balls.forEach((ball) => {
-    ball.x += ball.speed.x
-    ball.y += ball.speed.y
+    ball.x += ball.speed.x * deltaTime
+    ball.y += ball.speed.y * deltaTime
   })
 }
 
@@ -352,9 +353,9 @@ const triggerPowerUp = (powerUp) => {
   }
 }
 
-const movePowerUps = () => {
+const movePowerUps = (deltaTime) => {
   powerUps.forEach((powerUp) => {
-    powerUp.y += POWERUP_SPEED
+    powerUp.y += POWERUP_SPEED * deltaTime
     if (powerUp.y > BOARD_HEIGHT) {
       powerUps.splice(powerUps.indexOf(powerUp), 1)
     }
@@ -367,12 +368,20 @@ const movePowerUps = () => {
   })  
 }
 
-const update = (time) => {
+let deltaTime = 0
+
+
+const update = (time = 0) => {
   balls.forEach((ball) => {
     handleBallCollision(ball)
   })
-  moveBalls()
-  movePowerUps()
+  
+  deltaTime = (time - lastTime) / 16
+  lastTime = time
+
+  console.log(deltaTime)
+  moveBalls(deltaTime)
+  movePowerUps(deltaTime)
   writeScore()
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
